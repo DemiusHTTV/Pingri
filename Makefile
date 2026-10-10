@@ -1,4 +1,4 @@
-.PHONY: up down logs ps
+PHONY: up down
 
 up:
 	@echo "Starting containers..."
@@ -7,11 +7,6 @@ up:
 
 down:
 	@echo "Stopping containers..."
-	docker compose down
+	docker compose down -v
 	@echo "Containers stopped."
 
-logs:
-	docker compose logs -f
-
-ps:
-	docker compose ps
