@@ -1,43 +1,44 @@
-from pingri.config import settings, dp
-from aiogram.types import Message, ReplyKeyboardButton, ReplyKeyboardMarkup
-from aiogram.filters import CommandStart, CommandHelp
-from pingri import Role
+from aiogram import Router
+from aiogram.filters import Command, CommandStart
+from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 
-MYTASK = ReplyKeyboardButton(text="Мои задачи")
-EVENTS = ReplyKeyboardButton(text="Мероприятия")
-DIRECTORY = ReplyKeyboardButton(text="Справочник")
-STATUS = ReplyKeyboardButton(text="Статус")
-CREATE = ReplyKeyboardButton(text="Создать")
+from pingri.role import Role
+
+router = Router()
+
+MYTASK = KeyboardButton(text="Мои задачи")
+EVENTS = KeyboardButton(text="Мероприятия")
+DIRECTORY = KeyboardButton(text="Справочник")
+STATUS = KeyboardButton(text="Статус")
+CREATE = KeyboardButton(text="Создать")
 
 
-def get_user_role(role: Role) -> ReplyKeyboardMarkup:
-     rows = [
+def main_menu(role: Role) -> ReplyKeyboardMarkup:
+    rows = [
         [MYTASK, EVENTS],
         [DIRECTORY],
-
     ]
-    if role in [Role.CHIEF, Role.ADMIN]:
-        rows.append([STATUS],[CREATE])
-    
+    if role in (Role.CHIEF, Role.ADMIN):
+        rows.append([STATUS, CREATE])
 
     return ReplyKeyboardMarkup(
         keyboard=rows,
         resize_keyboard=True,
-         is_persistent=True,
+        is_persistent=True,
     )
 
 
-
-@dp.message(CommandStart())
-async def start(message: Message)-> None:
-    await message.answer("Привет! Я <b>Pingri</b>. НУ и хз там текст в фото должен быть",reply_markup=get_user_role(Role.MEMBER))
-    
-
-@dp.message(CommandHelp())
-async def help(message: Message) -> None:
+@router.message(CommandStart())
+async def start(message: Message) -> None:
     await message.answer(
-        "Я бот для проверки доступности сайтов и сервисов.\n\n"
-        "Используйте команду /ping <сайт> для проверки доступности сайта.\n"
-        "Например: /ping google.com\n\n"
-        "Вы также можете использовать команду /help для получения справки."
+        "Привет! Я <b>Pingri</b>.",
+        reply_markup=main_menu(Role.MEMBER),
+    )
+
+
+@router.message(Command("help"))
+async def help_command(message: Message) -> None:
+    await message.answer(
+        "Я напоминаю о мероприятиях и задачах профкома.\n\n"
+        "Кнопки внизу экрана — основное меню."
     )

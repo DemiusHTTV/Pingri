@@ -1,22 +1,12 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
-from aiogram.filters import CommandStart
-from aiogram.types import Message
 
+from pingri.handlers import common
 from pingri.config import settings
+from aiogram import Bot, Dispatcher
 
 dp = Dispatcher()
-
-
-@dp.message(CommandStart())
-async def start(message: Message) -> None:
-    await message.answer("Привет! Я <b>Pingri</b>.")
-
-
 async def main() -> None:
     logging.basicConfig(level=logging.INFO)
     bot = Bot(
@@ -25,6 +15,7 @@ async def main() -> None:
     )
     me = await bot.get_me()
     logging.info("Запущен как @%s", me.username)
+    dp.include_router(common.router)
     await dp.start_polling(bot)
 
 
