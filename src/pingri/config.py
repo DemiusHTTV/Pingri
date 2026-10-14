@@ -1,5 +1,9 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
+from aiogram.filters import CommandStart
+from aiogram.types import Message
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -11,12 +15,8 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5433
     BOT_TOKEN: str
 
-    @property
-    def postgres_dsn(self) -> str:
-        return (
-            f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
-            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )
+   
 
 
 settings = Settings()
+dp = Dispatcher()
