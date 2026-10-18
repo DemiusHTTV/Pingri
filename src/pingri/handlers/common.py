@@ -6,11 +6,11 @@ from pingri.role import Role
 
 router = Router()
 
-MYTASK = KeyboardButton(text="Мои задачи")
-EVENTS = KeyboardButton(text="Мероприятия")
-DIRECTORY = KeyboardButton(text="Справочник")
-STATUS = KeyboardButton(text="Статус")
-CREATE = KeyboardButton(text="Создать")
+MYTASK = KeyboardButton(text=BTN_MYTASK)
+EVENTS = KeyboardButton(text=BTN_EVENTS)
+DIRECTORY = KeyboardButton(text=BTN_DIRECTORY)
+STATUS = KeyboardButton(text=BTN_STATUS)
+CREATE = KeyboardButton(text=BTN_CREATE)
 
 
 def main_menu(role: Role) -> ReplyKeyboardMarkup:
