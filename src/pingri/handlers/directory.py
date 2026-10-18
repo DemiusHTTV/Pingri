@@ -1,4 +1,4 @@
-import Pingri.texts as txt
+import pingri.texts as txt
 
 from aiogram import F, Router
 from aiogram.types import Message

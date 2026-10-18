@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
 from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
-
+from pingri.texts import *
 from pingri.role import Role
 
 router = Router()
