@@ -90,7 +90,14 @@ uv run pywrangler dev
 
 ## Cloudflare
 
-Worker собран на Python Workers и FastAPI. Сначала разверни Worker, затем добавь секреты для обычных ручек и просмотра главных:
+Worker entrypoint находится в `src/worker.py`. Если подключаешь репозиторий через Cloudflare Builds, поставь команды:
+
+- Build command: `uv sync`
+- Deploy command: `uv run pywrangler deploy`
+
+Используй `pywrangler deploy`, а не `npx wrangler deploy`: он подготавливает Python-модули для Worker. Entry point лежит прямо в `src/`, чтобы импорты пакета `pingri` находились в сборке. Имя Worker в Cloudflare Builds должно быть `pingri`, как в `wrangler.jsonc`.
+
+Для ручного деплоя из терминала:
 
 ```bash
 uv run pywrangler deploy
