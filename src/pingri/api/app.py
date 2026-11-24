@@ -27,6 +27,16 @@ app.include_router(tasks_router, dependencies=[Depends(check_api_key)])
 app.include_router(people_router, dependencies=[Depends(check_api_key)])
 
 
+@app.get("/", tags=["Сервис"])
+async def root() -> dict[str, str]:
+    return {
+        "service": "Pingri API",
+        "status": "ok",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
+
 @app.get("/health", tags=["Сервис"])
 async def health() -> dict[str, str]:
     return {"status": "ok"}
