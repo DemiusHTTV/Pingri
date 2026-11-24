@@ -3,21 +3,15 @@ import pingri.texts as txt
 from aiogram import F, Router
 from aiogram.types import Message
 
+from pingri.mock_data import MOCK_PEOPLE
 
 router = Router()
 
+
 @router.message(F.text == txt.BTN_DIRECTORY)
-async def directory(message: Message) -> None:  
-    await message.answer(
-        "Справочник профкома:\n\n"
-        "1. Иванов Иван Иванович — председатель профкома\n"
-        "2. Петров Пётр Петрович — заместитель председателя\n"
-        "3. Сидоров Сидор Сидорович — секретарь\n"
-        "4. Кузнецова Анна Сергеевна — бухгалтер\n"
-        "5. Смирнова Ольга Викторовна — юрист\n"
-        "6. Фёдоров Алексей Николаевич — инженер по охране труда\n"
-        "7. Васильева Мария Александровна — специалист по кадрам\n"
-        "8. Козлов Дмитрий Владимирович — специалист по информационным технологиям\n"
-        "9. Новикова Елена Сергеевна — специалист по социальным вопросам\n"
-        "10. Орлова Наталья Викторовна — специалист по культурно-массовой работе\n"
-    )
+async def directory(message: Message) -> None:
+    rows = [
+        f"{index}. {person['name']} — {person['responsibility']}"
+        for index, person in enumerate(MOCK_PEOPLE, start=1)
+    ]
+    await message.answer("Справочник профкома:\n\n" + "\n".join(rows))

@@ -1,26 +1,22 @@
-from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from aiogram import F, Router
 from aiogram.types import Message
 
 import pingri.texts as txt
+from pingri.mock_data import mock_events
 
 router = Router()
 
 
-@dataclass
-class _StubEvent:
-    title: str
-    starts_at: datetime
-
-
-async def upcoming_events(days: int = 14) -> list[_StubEvent]:
-    """Заглушка вместо сервиса. TODO: заменить запросом в БД."""
-    now = datetime.now()
+async def upcoming_events(days: int = 14) -> list[dict]:
+    now = datetime.now(ZoneInfo("Europe/Moscow"))
+    until = now.timestamp() + days * 86400
     return [
-        _StubEvent("Собрание профкома", now + timedelta(days=2, hours=3)),
-        _StubEvent("Сдача отчётов по взносам", now + timedelta(days=9)),
+        event
+        for event in mock_events(now)
+        if now.timestamp() <= event["starts_at"].timestamp() <= until
     ]
 
 
@@ -32,6 +28,7 @@ async def events(message: Message) -> None:
         return
 
     text = "\n\n".join(
-        f"<b>{e.title}</b>\n{e.starts_at:%d.%m в %H:%M}" for e in items
+        f"<b>{event['title']}</b>\n{event['starts_at']:%d.%m в %H:%M}"
+        for event in items
     )
     await message.answer(f"Ближайшие мероприятия:\n\n{text}")
