@@ -1,13 +1,13 @@
 # Pingri
 
-Pingri — backend для мероприятий, задач и справочника команды. Сейчас данные лежат в памяти процесса: после перезапуска они пропадут. PostgreSQL в этой версии не используется API.
+Pingri — бот и backend для мероприятий, задач и справочника команды. Сейчас данные лежат в памяти процесса: после перезапуска они пропадут. PostgreSQL пока не используется API.
 
 ## Папки
 
 - `src/pingri/api/` — HTTP-ручки, модели запросов и временное хранилище.
 - `src/pingri/handlers/` — обработчики Telegram-бота.
 - `src/pingri/db/` — модели и запросы к PostgreSQL; API пока их не вызывает.
-- `src/pingri/mock_data.py` — общие примеры данных для людей, мероприятий, поручений и задач.
+- `src/pingri/mock_data.py` — общие примеры людей, мероприятий, поручений и задач.
 
 В `mock_data.py`:
 
@@ -17,49 +17,52 @@ Pingri — backend для мероприятий, задач и справочн
 
 Моки автоматически загружаются в API только когда задано `LOAD_MOCK_DATA=true`.
 
-## Локальный запуск API
+## Запуск бота на компьютере
 
 Нужны Python 3.13 и `uv`.
 
+Сначала установи зависимости бота:
+
 ```bash
-uv sync
+uv sync --extra bot
 ```
 
-Создай локальный файл `.dev.vars`:
+Создай в корне проекта файл `.env` и укажи токен, который выдал BotFather:
 
 ```env
-API_KEY=local-dev-key
-CHIEF_API_KEY=chief-view-key
-LOAD_MOCK_DATA=true
+BOT_TOKEN=твой_токен_бота
 ```
 
-Запусти локальный Cloudflare Worker:
+Запусти бота:
 
 ```bash
-uv run pywrangler dev
+uv run pingri
 ```
 
-Проверка доступности: `GET http://localhost:8787/health`. Для обычных ручек передавай `X-API-Key: local-dev-key`, для обзора главных — `X-Chief-Key: chief-view-key`.
+Остановить бота можно сочетанием `Ctrl+C`. Пока эта команда работает, бот принимает сообщения. Данные и ответы берутся из моков.
 
-## Ручки
+## HTTP API
+
+Ручки находятся в `src/pingri/api/`. Обычные ручки проверяют `X-API-Key`, а обзор для главных — `X-Chief-Key`.
 
 | Метод | Путь | Что делает |
 | --- | --- | --- |
-| `GET` | `/health` | Проверяет, что API запущен |
+| `GET` | `/` | Показывает состояние API и ссылки на `/docs` и `/health` |
+| `GET` | `/health` | Проверяет доступность API |
 | `GET` | `/api/people?search=афиши` | Ищет людей по имени или ответственности |
 | `POST` | `/api/people` | Добавляет человека в справочник |
 | `DELETE` | `/api/people/{id}` | Удаляет человека |
 | `GET` | `/api/events?days=14` | Показывает ближайшие мероприятия |
 | `POST` | `/api/events` | Создаёт мероприятие |
 | `DELETE` | `/api/events/{id}` | Удаляет мероприятие |
-| `GET` | `/api/overview/workload` | Таблица поручений для главных: тип мероприятия, что сделать, срок и ответственный |
-| `GET` | `/api/overview/workload.csv` | Скачать эту таблицу как CSV и открыть в Excel или Google Sheets |
+| `GET` | `/api/overview/workload` | Показывает поручения, сроки и ответственных |
+| `GET` | `/api/overview/workload.csv` | Скачивает таблицу поручений в CSV |
 | `GET` | `/api/tasks?assignee=Имя` | Показывает задачи, при желании — одного исполнителя |
 | `POST` | `/api/tasks` | Ставит задачу |
 | `PATCH` | `/api/tasks/{id}` | Меняет статус и комментарий задачи |
 | `DELETE` | `/api/tasks/{id}` | Удаляет задачу |
 
-Тела запросов и ответы можно посмотреть в Swagger: `/docs`.
+Тела запросов и ответы описаны в Swagger (`/docs`). Для задачи статусы: `new`, `accepted`, `cannot`, `done`. При статусе `cannot` нужно заполнить `comment`.
 
 Пример создания мероприятия:
 
@@ -86,25 +89,10 @@ uv run pywrangler dev
 }
 ```
 
-У дат нужен часовой пояс. Для задачи статусы: `new`, `accepted`, `cannot`, `done`. При статусе `cannot` нужно заполнить `comment`.
+## Структура
 
-## Cloudflare
-
-Worker entrypoint находится в `src/worker.py`. Если подключаешь репозиторий через Cloudflare Builds, поставь команды:
-
-- Build command: `uv sync`
-- Deploy command: `uv run pywrangler deploy`
-
-Используй `pywrangler deploy`, а не `npx wrangler deploy`: он подготавливает Python-модули для Worker. Entry point лежит прямо в `src/`, чтобы импорты пакета `pingri` находились в сборке. Имя Worker в Cloudflare Builds должно быть `pingri`, как в `wrangler.jsonc`.
-
-Для ручного деплоя из терминала:
-
-```bash
-uv run pywrangler deploy
-uv run pywrangler secret put API_KEY
-uv run pywrangler secret put CHIEF_API_KEY
-```
-
-HTTP API можно развернуть на Cloudflare уже сейчас. Telegram polling-бот из `src/pingri/main.py` — отдельный процесс; его webhook-подключение будет следующим шагом. Временное хранилище Worker подходит для разработки, но Cloudflare может запускать несколько копий и перезапускать их. Для общих и постоянных данных позже понадобится D1 или другое хранилище.
-
-Не добавляй `LOAD_MOCK_DATA=true` в настройки production Worker: иначе он покажет примеры из `mock_data.py`.
+- `src/pingri/main.py` — запускает polling бота.
+- `src/pingri/handlers/` — обработчики команд и кнопок.
+- `src/pingri/mock_data.py` — примеры людей, мероприятий и задач.
+- `src/pingri/api/` — HTTP API проекта.
+- `src/pingri/db/` — модели и настройка будущей базы данных.
