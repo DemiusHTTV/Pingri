@@ -6,15 +6,25 @@ readme = "README.md"
 authors = [
     { name = "Dmitriy", email = "babygreenyoda@yandex.ru" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "aiogram>=3.31.0",
-    "asyncpg>=0.32.0",
+    "fastapi>=0.115.0",
+]
+
+[project.optional-dependencies]
+bot = [
+    "aiogram>=3.31.0",
     "pydantic-settings>=2.15.0",
+]
+database = [
+    "alembic>=1.20.0",
+    "asyncpg>=0.32.0",
+    "sqlalchemy[asyncio]>=2.0",
 ]
 
 [project.scripts]
-pingri = "pingri:main"
+pingri = "pingri.cli:run"
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]

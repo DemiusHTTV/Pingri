@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from pingri.config import settings
-from pingri.handlers import common
+from pingri.handlers import build_router
 
 dp = Dispatcher()
 async def main() -> None:
@@ -18,7 +18,7 @@ async def main() -> None:
     )
     me = await bot.get_me()
     logging.info("Запущен как @%s", me.username)
-    dp.include_router(common.router)
+    dp.include_router(build_router())
     await dp.start_polling(bot)
 
 
