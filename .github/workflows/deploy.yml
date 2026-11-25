@@ -2,7 +2,7 @@ name: deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -12,21 +12,18 @@ jobs:
 
   deploy:
     needs: build
-    if: github,,event_name == 'push'
+    if: github event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
+      - name: Connect and deploy
+        uses: appleboy/ssh-action@v1
         with:
-          name: dist
-          path: dist/
-          
-      - name: Deploy
-        uses: burnett01/rsync-deployments@5.2.2
-        with:
-          switches: -avzr --delete
-          path: dist/
-          remote_path: ${{ secrets.DEPLOY_PATH }}
-          remote_host: ${{ secrets.SSH_HOST }}
-          remote_user: ${{ secrets.SSH_USER }}
-          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /opt/pingri
+            git pull origin master
+            uv sync --extra bot
+            sudo systemctl restart pingri
